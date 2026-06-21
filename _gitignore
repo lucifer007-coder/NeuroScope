@@ -1,0 +1,14 @@
+# Models & Checkpoints
+models/
+checkpoints/
+*.pt
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# OS
+.DS_Store
+Thumbs.db
