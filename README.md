@@ -2,8 +2,6 @@
 
 NeuroScope is a modern, real-time interpretability observatory for analyzing and steering neural networks. Built on FastAPI, PyTorch, and Vanilla JS, it demystifies the "black box" of AI through interactive visualization, causal intervention, and feature inversion.
 
-![Sankey Flow Diagram](/media__1782038176143.png)
-
 ## 🌟 Key Features
 
 * **Game Arena**: Interactive canvas to drag-and-drop the Agent and Target, generating inputs for the neural network. 
@@ -12,8 +10,6 @@ NeuroScope is a modern, real-time interpretability observatory for analyzing and
 * **Decision Backtrace**: Trace outputs back through the Sparse Autoencoder (SAE) into human-readable concepts with interactive Sankey diagrams.
 * **Feature Observatory**: Inspect the active latent dictionary features disentangled by the SAE.
 * **Game-State Atlas**: Run gradient ascent (feature inversion) to "dream" the exact coordinates that maximize a specific SAE feature.
-
-![Feature Inversion Dream State](/media__1782038528851.png)
 
 ## 🏗️ Architecture
 
