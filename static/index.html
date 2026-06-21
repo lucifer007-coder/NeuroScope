@@ -1,1 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroScope: Ultimate Interpretability Observatory</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Plotly.js CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header glass">
+            <div class="header-logo">
+                <span class="icon">🔬</span>
+                <div>
+                    <h1>NeuroScope</h1>
+                    <p class="subtitle">Interpretability Observatory for Coordinate Catcher Net</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="btnHowTo" class="btn btn-secondary btn-sm" style="margin-right: 8px;">How-To Guide</button>
+                <button id="btnExportNotebook" class="btn btn-secondary btn-sm" style="margin-right: 8px;">Download Notebook</button>
+                <button id="btnExport" class="btn btn-secondary btn-sm" style="margin-right: 16px;">Download Report</button>
+                <div class="connection-status">
+                    <span class="status-indicator disconnected" id="statusIndicator"></span>
+                    <span class="status-text" id="statusText">Connecting to server...</span>
+                </div>
+            </div>
+        </header>
 
+        <!-- Main Workspace -->
+        <main class="workspace-grid">
+            
+            <!-- Left Panel: Game & Controls -->
+            <section class="left-panel">
+                <!-- Game Arena Canvas -->
+                <div class="panel-card glass">
+                    <div class="card-header">
+                        <h2>🎮 Game Arena</h2>
+                        <span class="badge">Interactive</span>
+                    </div>
+                    <p class="card-desc">Drag the Agent (cyan) or Target (red) to change the neural network inputs in real-time.</p>
+                    <div class="canvas-wrapper">
+                        <canvas id="arenaCanvas" width="400" height="400"></canvas>
+                        <div class="canvas-overlay" id="predictionOverlay">Prediction: --</div>
+                    </div>
+                    <div class="coords-display">
+                        <div class="coord-tag agent">Agent: <span id="val-agent-x">0.00</span>, <span id="val-agent-y">0.00</span></div>
+                        <div class="coord-tag target">Target: <span id="val-target-x">0.00</span>, <span id="val-target-y">0.00</span></div>
+                    </div>
+                </div>
+
+                <!-- Live Training Panel -->
+                <div class="panel-card glass">
+                    <div class="card-header">
+                        <h2>🧠 Live Training</h2>
+                        <span class="badge badge-purple" id="epochBadge">Epoch: 0</span>
+                    </div>
+                    <div class="training-controls">
+                        <button class="btn btn-primary" id="btnTrain1">Train 1 Epoch</button>
+                        <button class="btn btn-secondary" id="btnTrain50">
+                            <span>Train 50 Epochs</span>
+                            <div class="spinner btn-spinner" id="trainSpinner"></div>
+                        </button>
+                    </div>
+                    
+                    <div class="progress-bar-container" id="progressBarContainer">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <span class="metric-label">Base Loss</span>
+                            <span class="metric-val" id="metricLoss">0.0000</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">Accuracy</span>
+                            <span class="metric-val" id="metricAcc">0.0%</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-label">SAE Loss</span>
+                            <span class="metric-val" id="metricSaeLoss">0.0000</span>
+                        </div>
+                    </div>
+
+                    <!-- Training Metrics Chart -->
+                    <div class="chart-container" id="trainingChart"></div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Interpretability Tabs -->
+            <section class="right-panel">
+                <div class="tab-card glass">
+                    <!-- Tab Headers -->
+                    <nav class="tab-headers">
+                        <button class="tab-btn active" data-tab="tab-backtrace">🔍 Decision Backtrace</button>
+                        <button class="tab-btn" data-tab="tab-intervention">🧪 Intervention Sandbox</button>
+                        <button class="tab-btn" data-tab="tab-observatory">🌌 Feature Observatory</button>
+                        <button class="tab-btn" data-tab="tab-atlas">🗺️ Game-State Atlas</button>
+                        <button class="tab-btn" data-tab="tab-upload">📦 Upload Weights</button>
+                    </nav>
+
+                    <!-- Tab Contents -->
+                    <div class="tab-content-container">
+                        
+                        <!-- Tab 1: Decision Backtrace -->
+                        <div class="tab-content active" id="tab-backtrace">
+                            <div class="backtrace-top-row">
+                                <div class="backtrace-col-left">
+                                    <h3>Action Confidence</h3>
+                                    <div id="confidenceChart" class="mini-chart"></div>
+                                </div>
+                                <div class="backtrace-col-right">
+                                    <h3>Causal Trace Narrative</h3>
+                                    <div class="narrative-box" id="narrativeText">
+                                        Select inputs on the arena to generate interpretability insights.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="backtrace-bottom-row">
+                                <div class="sankey-header">
+                                    <h3>Causal Flow Pathway (Inputs → Neurons → SAE Features → Outputs)</h3>
+                                    <div class="sankey-controls">
+                                        <label for="topKSlider">Top K: <span id="topKVal">3</span></label>
+                                        <input type="range" id="topKSlider" min="2" max="8" value="3" step="1">
+                                        <button class="btn btn-sm btn-outline" id="btnToggleAllNeurons">Show All Neurons</button>
+                                    </div>
+                                </div>
+                                <div id="sankeyChart" class="sankey-chart"></div>
+                                <p class="chart-caption" id="sankeyCaption">Showing connections across active neurons and features</p>
+                            </div>
+                            
+                            <hr style="border:1px solid rgba(255,255,255,0.05); margin: 24px 0;">
+                            
+                            <div class="heatmap-container" style="padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-top: 16px;">
+                                <h3>Feature-to-Logit Direct Impact Heatmap</h3>
+                                <p style="font-size: 0.9em; color: rgba(255,255,255,0.6); margin-bottom: 12px;">Visualizing the direct causal weight each latent feature applies to the final directional logits.</p>
+                                <div id="heatmapChart" style="width:100%; height: 350px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: Intervention Sandbox -->
+                        <div class="tab-content" id="tab-intervention">
+                            <div class="intervention-intro">
+                                <h3>Neural Pruning & Causal Intervention</h3>
+                                <p>Uncheck a neuron below to zero out its activation vector. See exactly how the model's logits and action prediction shift in real-time.</p>
+                            </div>
+                            
+                            <div class="intervention-grid">
+                                <div class="neurons-checkbox-panel">
+                                    <h4>Base MLP Neurons (Pruning Grid)</h4>
+                                    <div class="action-bar">
+                                        <button class="btn btn-sm" id="btnResetNeurons">Reset All</button>
+                                        <button class="btn btn-sm" id="btnZeroAllNeurons">Zero All</button>
+                                    </div>
+                                    <div class="checkbox-grid" id="neuronsGrid">
+                                        <!-- Dynamically populated with 32 checkboxes -->
+                                    </div>
+                                </div>
+                                
+                                <div class="intervention-results-panel">
+                                    <div class="comparison-row">
+                                        <div class="comp-box">
+                                            <span class="comp-label">Original Prediction</span>
+                                            <span class="comp-val val-original" id="interveneOrigPred">--</span>
+                                        </div>
+                                        <div class="comp-box">
+                                            <span class="comp-label">Intervened Prediction</span>
+                                            <span class="comp-val val-intervened" id="interveneModPred">--</span>
+                                        </div>
+                                    </div>
+                                    <div class="intervention-chart-container">
+                                        <h4>Logit Probability Shift (Intervened - Original)</h4>
+                                        <div id="interventionChart" class="mini-chart"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 3: Feature Observatory -->
+                        <div class="tab-content" id="tab-observatory">
+                            <div class="observatory-intro">
+                                <h3>Latent Feature Decomposer (SAE Dictionary)</h3>
+                                <p>The Sparse Autoencoder disentangles the 32 base MLP neurons into 128 monosemantic concepts. Below are the active latent features for the current input coordinate vector, sorted by intensity.</p>
+                                <button class="btn btn-sm btn-outline" id="btnResetFeatures" style="margin-top: 8px;">Reset Zeroed Features</button>
+                            </div>
+                            <div class="feature-cards-grid" id="featureObservatoryGrid">
+                                <!-- Dynamically populated feature cards -->
+                            </div>
+                        </div>
+
+                        <!-- Tab 4: Game-State Atlas -->
+                        <div class="tab-content" id="tab-atlas">
+                            <div class="atlas-grid">
+                                <div class="atlas-control-panel">
+                                    <h3>Feature Inversion (Sae dreaming)</h3>
+                                    <p>Find the exact spatial coordinates (Agent & Target position) that maximize the activation of a particular SAE latent feature.</p>
+                                    
+                                    <div class="dream-input-group">
+                                        <label for="dreamFeatureId">Select Latent Feature ID (0 - 127)</label>
+                                        <input type="number" id="dreamFeatureId" min="0" max="127" value="0">
+                                    </div>
+                                    
+                                    <button class="btn btn-primary btn-block" id="btnDream">
+                                        <span>Dream Feature Coordinates</span>
+                                        <div class="spinner btn-spinner" id="dreamSpinner"></div>
+                                    </button>
+                                    
+                                    <div class="dream-result-coordinates" id="dreamCoordsDisplay" style="display: none;">
+                                        <h4>Maximally Activating Coordinates</h4>
+                                        <div class="coords-values">
+                                            <p>Agent position: <strong id="dreamAgentPos">0.00, 0.00</strong></p>
+                                            <p>Target position: <strong id="dreamTargetPos">0.00, 0.00</strong></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="atlas-visualization-panel">
+                                    <h3>Dream State Visualization</h3>
+                                    <div class="dream-canvas-container">
+                                        <canvas id="dreamCanvas" width="350" height="350"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 5: Upload Weights (Bring Your Own Model) -->
+                        <div class="tab-content" id="tab-upload">
+                            <div class="upload-intro">
+                                <h3>📦 Bring Your Own Weights</h3>
+                                <p>Upload your own locally-trained <code>.pt</code> state-dict files and interpret them live. The architecture must match exactly: <strong>Base Model</strong> — <code>CoordinateCatcher</code> (4→32→4), <strong>SAE</strong> — <code>SparseAutoencoder</code> (32→128→32).</p>
+                            </div>
+
+                            <div id="uploadDropzone" class="upload-dropzone">
+                                <div class="upload-drop-hint">
+                                    <span class="upload-icon">📂</span>
+                                    <p>Drag &amp; drop up to two <code>.pt</code> files here, or use the pickers below.<br>
+                                    <small>Drop order: 1st file → Base Model, 2nd file → SAE</small></p>
+                                </div>
+
+                                <div class="upload-row">
+                                    <div class="upload-field">
+                                        <label class="upload-file-label">
+                                            Base Model Weights <code>(.pt)</code>
+                                            <div class="upload-btn-wrap">
+                                                <input type="file" id="uploadBaseWeights" accept=".pt" hidden>
+                                                <button class="btn btn-sm btn-outline" onclick="document.getElementById('uploadBaseWeights').click()">Choose file</button>
+                                                <span id="uploadBaseLabel" class="upload-file-name" data-default="No file chosen">No file chosen</span>
+                                            </div>
+                                        </label>
+                                        <p class="upload-hint">Expected keys: <code>fc1.weight, fc1.bias, fc2.weight, fc2.bias</code></p>
+                                    </div>
+
+                                    <div class="upload-field">
+                                        <label class="upload-file-label">
+                                            SAE Weights <code>(.pt)</code>
+                                            <div class="upload-btn-wrap">
+                                                <input type="file" id="uploadSaeWeights" accept=".pt" hidden>
+                                                <button class="btn btn-sm btn-outline" onclick="document.getElementById('uploadSaeWeights').click()">Choose file</button>
+                                                <span id="uploadSaeLabel" class="upload-file-name" data-default="No file chosen">No file chosen</span>
+                                            </div>
+                                        </label>
+                                        <p class="upload-hint">Expected keys: <code>encoder.weight, encoder.bias, decoder.weight, decoder.bias</code></p>
+                                    </div>
+                                </div>
+
+                                <div class="upload-actions">
+                                    <button class="btn btn-primary" id="btnUploadWeights">
+                                        <span>Load Weights into Engine</span>
+                                        <div class="spinner btn-spinner" id="uploadSpinnerEl" style="display:none;"></div>
+                                    </button>
+                                </div>
+
+                                <div id="uploadStatus" class="upload-status" style="display:none;"></div>
+                            </div>
+
+                            <div class="upload-code-hint glass" style="margin-top: 20px; padding: 16px; border-radius: 12px;">
+                                <h4>How to export weights from your training script</h4>
+                                <pre><code># After training your model:
+torch.save(model.state_dict(), "my_base_model.pt")
+torch.save(sae.state_dict(), "my_sae.pt")
+# Then upload both files above.</code></pre>
+                            </div>
+                        </div>
+                    </div>  <!-- /.tab-content-container -->
+                </div>  <!-- /.tab-card -->
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Guided Onboarding Tour Modal -->
+    <div id="tourModal" class="tour-modal-overlay" style="display: none;">
+        <div class="tour-modal-content">
+            <div class="tour-header">
+                <h2 id="tourTitle">Welcome to NeuroScope</h2>
+                <button id="btnTourClose" class="btn-tour-close">&times;</button>
+            </div>
+            <div class="tour-body" id="tourBody">
+                <!-- Tour text injected via JS -->
+            </div>
+            <div class="tour-footer">
+                <div class="tour-indicators" id="tourIndicators">
+                    <!-- Dots injected via JS -->
+                </div>
+                <div class="tour-actions">
+                    <button id="btnTourBack" class="btn btn-secondary btn-sm" style="display:none;">Back</button>
+                    <button id="btnTourNext" class="btn btn-primary btn-sm">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Waking Up Overlay -->
+    <div id="wakingUpOverlay" class="waking-up-overlay" style="display: none;">
+        <div class="waking-up-content">
+            <div class="spinner lg-spinner"></div>
+            <h2>⚡ Server is waking up...</h2>
+            <p>The free-tier Render instance has spun down. It usually takes 30-60 seconds to resume.</p>
+        </div>
+    </div>
+
+    <!-- Script Entry Point -->
+    <script src="app.js"></script>
+</body>
+</html>
