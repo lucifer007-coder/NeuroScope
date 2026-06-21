@@ -42,6 +42,8 @@ graph LR
 **`index.html`, `app.js`, and `style.css` must be inside a `static/` folder** at the project
 root — if they're placed at the repo root instead, `GET /` will 404.
 
+### DEMO Link: https://neuroscope.onrender.com/
+
 ## 🚀 Local Setup
 
 **1. Clone and Install Dependencies**
