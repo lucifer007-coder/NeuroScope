@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroScope: How-To Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .howto-wrap {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        .howto-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+        }
+        .howto-section {
+            padding: 24px 28px;
+            margin-bottom: 20px;
+        }
+        .howto-section h2 {
+            font-family: var(--font-header);
+            font-size: 1.25rem;
+            margin-bottom: 10px;
+            color: var(--accent-cyan);
+        }
+        .howto-section h3 {
+            font-family: var(--font-header);
+            font-size: 1rem;
+            margin: 16px 0 6px;
+            color: var(--text-primary);
+        }
+        .howto-section p, .howto-section li {
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        .howto-section ul, .howto-section ol {
+            padding-left: 20px;
+            margin: 8px 0;
+        }
+        .howto-section code {
+            background: rgba(255,255,255,0.07);
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: var(--accent-cyan);
+        }
+        .toc {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .toc a {
+            font-size: 0.82rem;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--panel-border);
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        .toc a:hover {
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            color: #0d1117;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="howto-wrap">
+        <header class="howto-header glass">
+            <div class="header-logo">
+                <span class="icon">🔬</span>
+                <div>
+                    <h1>NeuroScope</h1>
+                    <p class="subtitle">How-To Guide</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary btn-sm" onclick="window.location.href='index.html'">← Back to App</button>
+            </div>
+        </header>
+
+        <nav class="toc glass" style="padding: 16px 20px;">
+            <a href="#getting-started">Getting Started</a>
+            <a href="#game-arena">Game Arena</a>
+            <a href="#live-training">Live Training</a>
+            <a href="#backtrace">Decision Backtrace</a>
+            <a href="#intervention">Intervention Sandbox</a>
+            <a href="#observatory">Feature Observatory</a>
+            <a href="#atlas">Game-State Atlas</a>
+            <a href="#upload">Bring Your Own Weights</a>
+            <a href="#export">Exporting Your Work</a>
+            <a href="#faq">FAQ &amp; Tips</a>
+        </nav>
+
+        <section class="howto-section glass" id="getting-started">
+            <h2>🌟 Getting Started</h2>
+            <p>NeuroScope is an interactive observatory for watching a tiny neural network learn a navigation task, then peering inside it to see <em>why</em> it makes the decisions it does. The task is simple: given an Agent's position and a Target's position on a 2D plane, predict which direction (Up, Down, Left, or Right) the Agent should move to get closer to the Target.</p>
+            <p>The model is intentionally small — a 4‑input, 32‑neuron MLP — so that a Sparse Autoencoder (SAE) can decompose its internal activity into human-readable "concepts" you can inspect and manipulate in real time.</p>
+            <h3>Recommended first steps</h3>
+            <ol>
+                <li><span class="step-badge">1</span>Drag the Agent or Target around the <strong>Game Arena</strong> and watch the live prediction update.</li>
+                <li><span class="step-badge">2</span>Click <strong>Train 50 Epochs</strong> a few times in the <strong>Live Training</strong> panel until accuracy climbs above ~95%.</li>
+                <li><span class="step-badge">3</span>Open the <strong>Decision Backtrace</strong> tab to see the model's reasoning for the current Agent/Target positions.</li>
+                <li><span class="step-badge">4</span>Explore the other tabs — Intervention Sandbox, Feature Observatory, and Game-State Atlas — to go deeper.</li>
+            </ol>
+        </section>
+
+        <section class="howto-section glass" id="game-arena">
+            <h2>🎮 Game Arena</h2>
+            <p>The canvas in the left panel represents a 2D coordinate space from <code>-1</code> to <code>1</code> on both axes.</p>
+            <ul>
+                <li><strong>Cyan dot</strong> = the Agent. <strong>Red dot</strong> = the Target.</li>
+                <li>Click and drag either dot (mouse or touch) to reposition it. The network re-runs inference on every move and streams results back over a live WebSocket connection.</li>
+                <li>The arrow drawn from the Agent shows the model's predicted direction; its length and opacity scale with the model's confidence.</li>
+                <li>The numeric coordinates below the canvas update live as you drag.</li>
+            </ul>
+        </section>
+
+        <section class="howto-section glass" id="live-training">
+            <h2>🧠 Live Training</h2>
+            <p>This panel trains the base MLP and the Sparse Autoencoder together, one batch of synthetic coordinate data at a time.</p>
+            <ul>
+                <li><strong>Train 1 Epoch</strong> — runs a single training step. Useful for watching metrics move incrementally.</li>
+                <li><strong>Train 50 Epochs</strong> — runs 50 steps in one request; a progress bar shows estimated completion.</li>
+                <li><strong>Base Loss / Accuracy / SAE Loss</strong> — live metrics for the direction-prediction task and the autoencoder's reconstruction quality.</li>
+                <li>The chart below the metrics plots Base Loss and SAE Sparsity over the full training history.</li>
+            </ul>
+            <p>Training is cumulative — every click continues from the current weights, and progress is checkpointed periodically so it survives a server restart.</p>
+        </section>
+
+        <section class="howto-section glass" id="backtrace">
+            <h2>🔍 Decision Backtrace</h2>
+            <p>This tab explains the model's <em>current</em> prediction (based on wherever the Agent/Target currently are in the Game Arena).</p>
+            <ul>
+                <li><strong>Action Confidence</strong> — a bar chart of the softmax probability assigned to each of the four directions.</li>
+                <li><strong>Causal Trace Narrative</strong> — a plain-language summary naming the SAE features that most strongly drove the decision.</li>
+                <li><strong>Causal Flow Pathway (Sankey)</strong> — a flow diagram tracing Inputs → Neurons → SAE Features → Outputs. Use the <code>Top K</code> slider to control how many neurons/features are shown, or click <strong>Show All Neurons</strong> for the complete picture.</li>
+                <li><strong>Feature-to-Logit Heatmap</strong> — shows, for every one of the 128 latent features, how strongly it pushes the final decision toward each of the four directions.</li>
+            </ul>
+        </section>
+
+        <section class="howto-section glass" id="intervention">
+            <h2>🧪 Intervention Sandbox</h2>
+            <p>This is where you do causal experiments directly on the network.</p>
+            <ul>
+                <li>Each checkbox represents one of the 32 base-MLP neurons. Uncheck one to "prune" it — its activation is forced to zero for every subsequent inference.</li>
+                <li><strong>Reset All</strong> restores every neuron; <strong>Zero All</strong> prunes every neuron at once (useful as a sanity check).</li>
+                <li>The comparison row shows the <strong>Original Prediction</strong> (with no neurons pruned) side-by-side with the <strong>Intervened Prediction</strong> (with your current pruning applied).</li>
+                <li>The chart below plots the change in probability for each direction caused by your intervention — bars above zero mean that direction became more likely, below zero means less likely.</li>
+            </ul>
+            <p>Tip: prune one neuron at a time and watch the Decision Backtrace's Sankey diagram to see which causal pathways disappear.</p>
+        </section>
+
+        <section class="howto-section glass" id="observatory">
+            <h2>🌌 Feature Observatory</h2>
+            <p>The SAE decomposes the 32 base neurons into a larger dictionary of 128 latent features, most of which are intentionally inactive (sparse) for any given input. This tab lists the features that are currently firing above a small activation threshold, sorted by intensity.</p>
+            <ul>
+                <li>Click <strong>Zero</strong> on any feature card to suppress that feature, similar to pruning a neuron in the Intervention Sandbox — useful for testing whether a specific concept is responsible for a decision.</li>
+                <li>Click <strong>Reset Zeroed Features</strong> to restore every feature you've zeroed.</li>
+                <li>If you see "No features active above threshold," move the Agent or Target — most coordinate combinations activate at least a few features.</li>
+            </ul>
+        </section>
+
+        <section class="howto-section glass" id="atlas">
+            <h2>🗺️ Game-State Atlas (Feature Inversion / "Dreaming")</h2>
+            <p>Rather than asking "what does this input activate?", this tab asks the reverse question: "what input would maximally activate this feature?" This is done via gradient ascent directly on the coordinate inputs.</p>
+            <ol>
+                <li><span class="step-badge">1</span>Enter a Latent Feature ID between 0 and 127.</li>
+                <li><span class="step-badge">2</span>Click <strong>Dream Feature Coordinates</strong>.</li>
+                <li><span class="step-badge">3</span>The resulting Agent/Target coordinates that maximize that feature are shown numerically and plotted on the dream canvas.</li>
+            </ol>
+            <p>Note: with 128 features available and only a 4-dimensional input/32-neuron task to explain, many feature slots may never become meaningfully active during training ("dead" features) — dreaming on one of these will simply return the origin <code>(0, 0, 0, 0)</code>. Try a handful of different feature IDs to find the ones that have learned an interesting concept; training longer in the Live Training panel tends to bring more features to life.</p>
+        </section>
+
+        <section class="howto-section glass" id="upload">
+            <h2>📦 Bring Your Own Weights</h2>
+            <p>You can train your own version of the base model and/or SAE outside of NeuroScope and load the resulting weights into the live engine.</p>
+            <ul>
+                <li>The base model architecture must be exactly <code>CoordinateCatcher</code> (Linear 4→32, ReLU, Linear 32→4).</li>
+                <li>The SAE architecture must be exactly <code>SparseAutoencoder</code> (Linear 32→128, ReLU, Linear 128→32).</li>
+                <li>Export your trained weights with <code>torch.save(model.state_dict(), "my_base_model.pt")</code> (and similarly for the SAE), then upload the <code>.pt</code> file(s) using the pickers or by dragging them onto the dropzone.</li>
+                <li>Files are validated for an exact key/shape match before they're loaded — a mismatched architecture is rejected with a clear error rather than silently corrupting the live model.</li>
+            </ul>
+        </section>
+
+        <section class="howto-section glass" id="export">
+            <h2>⬇️ Exporting Your Work</h2>
+            <ul>
+                <li><strong>Download Notebook</strong> — generates a self-contained Jupyter Notebook with the model code and your current trained weights embedded as base64, so you can keep experimenting offline.</li>
+                <li><strong>Download Report</strong> — saves a JSON snapshot of the current Game Arena state, prediction, probabilities, causal narrative, and Sankey diagram data, for use elsewhere or for your own records.</li>
+            </ul>
+        </section>
+
+        <section class="howto-section glass" id="faq">
+            <h2>❓ FAQ &amp; Tips</h2>
+            <h3>The connection indicator says "Disconnected"</h3>
+            <p>NeuroScope keeps a live WebSocket connection open for real-time inference. If your hosting platform's free-tier instance has spun down, the page will show a "Server is waking up..." overlay and reconnect automatically — this can take 30-60 seconds on the first request.</p>
+            <h3>Why are most SAE features always inactive?</h3>
+            <p>That's expected and intentional — an SAE with more latent features than the underlying task strictly needs is "overcomplete" by design, so it can isolate distinct concepts cleanly. Only a handful of the 128 features will ever fire for this 4-dimensional task.</p>
+            <h3>My intervention isn't changing the prediction</h3>
+            <p>Some neurons and features are redundant or have very little causal weight on the output for the current input — try the Sankey diagram in Decision Backtrace to see which ones actually carry weight to the output before pruning or zeroing them.</p>
+        </section>
+    </div>
+</body>
+</html>
