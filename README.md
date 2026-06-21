@@ -1,4 +1,4 @@
-# NeuroScope: Ultimate Interpretability Observatory
+# NeuroScope: An Interpretability Observatory
 
 NeuroScope is a modern, real-time interpretability observatory for analyzing and steering neural networks. Built on FastAPI, PyTorch, and Vanilla JS, it demystifies the "black box" of AI through interactive visualization, causal intervention, and feature inversion.
 
